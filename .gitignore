@@ -1,3 +1,4 @@
+# All unimportant hidden files
 .*
 !.gitignore
 !.gitkeep
@@ -5,14 +6,20 @@
 !.gitmodules
 !.editorconfig
 
+# Temporary and system files
 *~*
 .DS_Store
 desktop.ini
 
+# Output directories
 build/
 dist/
 bin/
 out/
+
+# Local secrets
+/config/*
+!/config/.gitkeep
 
 ### STS ###
 .apt_generated

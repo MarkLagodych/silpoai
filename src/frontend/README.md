@@ -1,17 +1,23 @@
 # Frontend
 
-## Build
+This project requires Deno 2.3+
 
-Use Deno 2.3+
+## Format
+
+```sh
+deno fmt
+```
+
+## Build & run
 
 ```sh
 deno install
 deno run build
 ```
 
-### Development
+### Develop
 
-Fast recompilation
+This watches the source directory and recompiles on file changes.
 ```sh
 deno run dev
 ```
