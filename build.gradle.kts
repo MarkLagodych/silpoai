@@ -29,7 +29,10 @@ extra["springAiVersion"] = "2.0.1"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+
 	implementation("org.springframework.ai:spring-ai-starter-model-google-genai")
+    implementation("org.springframework.ai:spring-ai-starter-mcp-client")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

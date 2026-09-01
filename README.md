@@ -30,3 +30,9 @@
     ```sh
     ./gradlew bootRun
     ```
+
+#### Format
+
+```sh
+./gradlew spotlessApply
+```
