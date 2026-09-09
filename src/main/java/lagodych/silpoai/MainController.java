@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MainController {
+
     private final SyncMcpToolCallbackProvider mcpToolCallbacks;
 
     private final List<McpSyncClient> clients;
@@ -26,19 +27,25 @@ public class MainController {
 
     @GetMapping("/")
     String index(String query) {
-        var currentWeatherBlock = "";
-        if (StringUtils.hasText(query)) {
-            var chatResponse = chatClient.prompt(query).tools(mcpToolCallbacks).call().content();
 
-            currentWeatherBlock =
+        var llmAnswerBlock = "";
+        if (StringUtils.hasText(query)) {
+            var llmAnswer =
+                    chatClient
+                            .prompt(query + "\nWrite your answer in inline HTML.")
+                            .tools(mcpToolCallbacks)
+                            .call()
+                            .content();
+
+            llmAnswerBlock =
                     """
-					<h2>Weather in %s</h2>
-					<p>%s</p>
-					<form action="" method="GET">
-					<button type="submit">Clear</button>
-					</form>
-					"""
-                            .formatted(query, chatResponse);
+                    <h2>[%s]</h2>
+                    <p>%s</p>
+                    <form action="" method="GET">
+                    <button type="submit">Clear</button>
+                    </form>
+                    """
+                            .formatted(query, llmAnswer);
         }
 
         var currentMcpServersBlock =
@@ -49,24 +56,59 @@ public class MainController {
                         .collect(Collectors.joining("\n"));
 
         return """
-				<h1>Demo controller</h1>
-				%s
+                <html>
+                <head>
+                    <title>Silpo AI</title>
+                </head>
+                <body>
+                    <h1>LLM chat with Silpo MCP</h1>
+                    %s
 
-				<hr>
+                    <hr>
 
-				<h2>Ask LLM</h2>
-				<form action="" method="GET">
-				    <input type="text" name="query" value="" placeholder="Hi there!" />
-				    <button type="submit">Ask the LLM</button>
-				</form>
+                    <h2>Ask LLM</h2>
+                    <form action="" method="GET">
+                        <input type="text" name="query" value="" placeholder="Hi there!" />
+                        <button type="submit">Ask</button>
+                    </form>
 
-				<hr>
-
-				<h2>Registered MCP servers:</h2>
-				<ul>
-				%s
-				</ul>
-				"""
-                .formatted(currentWeatherBlock, currentMcpServersBlock);
+                    <h2>Registered MCP servers:</h2>
+                    <ul>
+                    %s
+                    </ul>
+                </body>
+                </html>
+                """
+                .formatted(llmAnswerBlock, currentMcpServersBlock);
     }
+
+    // @ExceptionHandler
+    // String handleException(Exception e) {
+    //     // switch (e) {
+    //     //     case instanceof org.springframework.web.client.HttpClientErrorException.NotFound
+    // notFound -> {
+    //     //         throw e;
+    //     //     }
+    //     // }
+
+    //     var trace = new StringWriter();
+    //     e.printStackTrace(new java.io.PrintWriter(trace));
+
+    //     return """
+    //             <html>
+    //             <head>
+    //                 <title>Silpo AI: Exception</title>
+    //             </head>
+    //             <body>
+    //                 <h1>%s</h1>
+    //                 <h2>%s caused by:</h2>
+    //                 %s
+    //                 <hr/>
+    //                 <h2>Stack trace:</h2>
+    //                 <pre>%s</pre>
+    //             </body>
+    //             </html>
+    //             """
+    //             .formatted(e.getMessage(), e.getClass().getSimpleName(), e.getCause(), trace);
+    // }
 }
