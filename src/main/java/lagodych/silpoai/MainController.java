@@ -1,11 +1,13 @@
 package lagodych.silpoai;
 
 import io.modelcontextprotocol.client.McpSyncClient;
-import io.modelcontextprotocol.spec.McpSchema;
+import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,89 +28,40 @@ public class MainController {
     }
 
     @GetMapping("/")
-    String index(String query) {
-
-        var llmAnswerBlock = "";
-        if (StringUtils.hasText(query)) {
-            var llmAnswer =
-                    chatClient
-                            .prompt(query + "\nWrite your answer in inline HTML.")
-                            .tools(mcpToolCallbacks)
-                            .call()
-                            .content();
-
-            llmAnswerBlock =
-                    """
-                    <h2>[%s]</h2>
-                    <p>%s</p>
-                    <form action="" method="GET">
-                    <button type="submit">Clear</button>
-                    </form>
-                    """
-                            .formatted(query, llmAnswer);
-        }
-
-        var currentMcpServersBlock =
-                this.clients.stream()
-                        .map(McpSyncClient::getClientInfo)
-                        .map(McpSchema.Implementation::name)
-                        .map("    <li>%s</li>"::formatted)
-                        .collect(Collectors.joining("\n"));
-
-        return """
-                <html>
-                <head>
-                    <title>Silpo AI</title>
-                </head>
-                <body>
-                    <h1>LLM chat with Silpo MCP</h1>
-                    %s
-
-                    <hr>
-
-                    <h2>Ask LLM</h2>
-                    <form action="" method="GET">
-                        <input type="text" name="query" value="" placeholder="Hi there!" />
-                        <button type="submit">Ask</button>
-                    </form>
-
-                    <h2>Registered MCP servers:</h2>
-                    <ul>
-                    %s
-                    </ul>
-                </body>
-                </html>
-                """
-                .formatted(llmAnswerBlock, currentMcpServersBlock);
+    ResponseEntity<String> index() {
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/ai/auth")).build();
     }
 
-    // @ExceptionHandler
-    // String handleException(Exception e) {
-    //     // switch (e) {
-    //     //     case instanceof org.springframework.web.client.HttpClientErrorException.NotFound
-    // notFound -> {
-    //     //         throw e;
-    //     //     }
-    //     // }
+    @GetMapping("/ai/ask")
+    ResponseEntity<String> prompt(String prompt) {
+        if (!StringUtils.hasText(prompt)) return ResponseEntity.ok().body("");
 
-    //     var trace = new StringWriter();
-    //     e.printStackTrace(new java.io.PrintWriter(trace));
+        prompt += "\n\nAnswer in Ukrainian with inline HTML.";
 
-    //     return """
-    //             <html>
-    //             <head>
-    //                 <title>Silpo AI: Exception</title>
-    //             </head>
-    //             <body>
-    //                 <h1>%s</h1>
-    //                 <h2>%s caused by:</h2>
-    //                 %s
-    //                 <hr/>
-    //                 <h2>Stack trace:</h2>
-    //                 <pre>%s</pre>
-    //             </body>
-    //             </html>
-    //             """
-    //             .formatted(e.getMessage(), e.getClass().getSimpleName(), e.getCause(), trace);
-    // }
+        String response;
+        try {
+            response = chatClient.prompt(prompt).tools(mcpToolCallbacks).call().content();
+        } catch (OAuth2AuthorizationException e) {
+            // Frontend code should handle this and redirect the user to /ai/auth
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/ai/auth")
+    ResponseEntity<String> aiAuthorize() {
+        for (var client : clients) {
+            if (!client.isInitialized()) {
+                // May throw an OAuth authorization exception,
+                // which gets handled by Spring security and redirects to the MCP server login page
+                client.initialize();
+            }
+
+            // May throw an OAuth authorization exception too
+            client.listTools();
+        }
+
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/index.html")).build();
+    }
 }

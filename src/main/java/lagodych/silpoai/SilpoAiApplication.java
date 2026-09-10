@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SilpoAIApplication {
+public class SilpoAiApplication {
     public static void main(String[] args) {
-        SpringApplication.run(SilpoAIApplication.class, args);
+        SpringApplication.run(SilpoAiApplication.class, args);
     }
 }
