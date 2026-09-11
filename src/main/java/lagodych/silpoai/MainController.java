@@ -1,5 +1,6 @@
 package lagodych.silpoai;
 
+import com.google.genai.errors.ClientException;
 import io.modelcontextprotocol.client.McpSyncClient;
 import java.net.URI;
 import java.util.List;
@@ -15,16 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MainController {
 
+    private final ChatClient chatClient;
+
+    private final List<McpSyncClient> mcpClients;
     private final SyncMcpToolCallbackProvider mcpToolCallbacks;
 
-    private final List<McpSyncClient> clients;
-
-    private final ChatClient chatClient;
+    private final String systemPrompt =
+            """
+            You are an AI agent that simply executes MCP tools.
+            Be as concise and efficient as possible. Do not provide any explanations or additional
+            information. Do not ask questions. Always output a short list of things you've done.
+            Answer in Ukrainian with inline HTML. Do not use Markdown formatting.
+            """;
 
     MainController(ChatClient.Builder chatClientBuilder, List<McpSyncClient> clients) {
         this.chatClient = chatClientBuilder.build();
+        this.mcpClients = clients;
         this.mcpToolCallbacks = SyncMcpToolCallbackProvider.builder().mcpClients(clients).build();
-        this.clients = clients;
     }
 
     @GetMapping("/")
@@ -36,14 +44,21 @@ public class MainController {
     ResponseEntity<String> prompt(String prompt) {
         if (!StringUtils.hasText(prompt)) return ResponseEntity.ok().body("");
 
-        prompt += "\n\nAnswer in Ukrainian with inline HTML.";
-
         String response;
         try {
-            response = chatClient.prompt(prompt).tools(mcpToolCallbacks).call().content();
+            response =
+                    chatClient
+                            .prompt(prompt)
+                            .system(systemPrompt)
+                            .tools(mcpToolCallbacks)
+                            .call()
+                            .content();
         } catch (OAuth2AuthorizationException e) {
-            // Frontend code should handle this and redirect the user to /ai/auth
+            // Frontend code should handle this manually and redirect the user to /ai/auth
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (ClientException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("AI request failed: " + e.getMessage());
         }
 
         return ResponseEntity.ok().body(response);
@@ -51,10 +66,10 @@ public class MainController {
 
     @GetMapping("/ai/auth")
     ResponseEntity<String> aiAuthorize() {
-        for (var client : clients) {
+        for (var client : mcpClients) {
             if (!client.isInitialized()) {
-                // May throw an OAuth authorization exception,
-                // which gets handled by Spring security and redirects to the MCP server login page
+                // May throw an OAuth authorization exception, which gets handled
+                // by Spring Security and redirects to the MCP server login page
                 client.initialize();
             }
 

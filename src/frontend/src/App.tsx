@@ -1,15 +1,31 @@
 import { Accessor, createResource, createSignal, Show } from "solid-js";
 import "./App.css";
 
+const aiAskUrl = "/ai/ask";
+const aiAuthUrl = "/ai/auth";
+
+export class BackendAuthorizationError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
 export async function askAi(prompt: string): Promise<string> {
-    const url = new URL("/ai/ask", globalThis.location.href);
+    const url = new URL(aiAskUrl, globalThis.location.href);
     url.searchParams.set("prompt", prompt);
 
     const res = await fetch(url.toString());
 
     if (!res.ok) {
         if (res.status === 401 /* Unauthorized */) {
-            globalThis.location.href = "/ai/auth";
+            globalThis.location.href = aiAuthUrl;
+            throw new BackendAuthorizationError("Unauthorized. Must redirect to " + aiAuthUrl);
+        } else {
+            if (res.body === null) {
+                return "Unknown error";
+            }
+
+            return "Error: " + await res.text();
         }
     }
 
@@ -21,8 +37,9 @@ export function AiResponse(props: { prompt: Accessor<string> }) {
 
     return (
         <div>
+            AI Response:
             <Show when={!response.loading} fallback={<p>Loading...</p>}>
-                AI Response: <div innerHTML={response()}></div>
+                <div innerHTML={response()}></div>
             </Show>
         </div>
     );
