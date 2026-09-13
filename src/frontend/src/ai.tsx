@@ -1,5 +1,4 @@
-import { Accessor, createResource, createSignal, Show } from "solid-js";
-import "./App.css";
+import { Accessor, createResource, createSignal, For, Show } from "solid-js";
 
 const aiAskUrl = "/ai/ask";
 const aiAuthUrl = "/ai/auth";
@@ -19,13 +18,13 @@ export async function askAi(prompt: string): Promise<string> {
     if (!res.ok) {
         if (res.status === 401 /* Unauthorized */) {
             globalThis.location.href = aiAuthUrl;
-            throw new BackendAuthorizationError("Unauthorized. Must redirect to " + aiAuthUrl);
+            throw new BackendAuthorizationError("Unauthorized. Redirecting to " + aiAuthUrl);
         } else {
             if (res.body === null) {
-                return "Unknown error";
+                throw new Error("Unknown error");
             }
 
-            return "Error: " + await res.text();
+            throw new Error("Error: " + await res.text());
         }
     }
 
@@ -42,22 +41,5 @@ export function AiResponse(props: { prompt: Accessor<string> }) {
                 <div innerHTML={response()}></div>
             </Show>
         </div>
-    );
-}
-
-export function App() {
-    const [prompt, setPrompt] = createSignal("");
-    const [effectivePrompt, setEffectivePrompt] = createSignal("");
-
-    return (
-        <>
-            <input
-                type="text"
-                placeholder="Enter your message..."
-                on:input={(e) => setPrompt(e.currentTarget.value)}
-            />
-            <button type="button" onClick={() => setEffectivePrompt(prompt())}>Send</button>
-            <AiResponse prompt={effectivePrompt} />
-        </>
     );
 }
