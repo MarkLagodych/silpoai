@@ -17,6 +17,8 @@ dist/
 bin/
 out/
 
+logs/
+
 # Local secrets
 /config/*
 !/config/.gitkeep
