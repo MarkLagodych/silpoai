@@ -1,11 +1,29 @@
 # Smart shopping list
 
-This is my submission for Silpo AI Factory hackaton held by Fozzy Group in September 2026.
+> This is my submission for Silpo AI Factory hackaton held by Fozzy Group in September 2026.
+
+A shopping list, integrated with an LLM and official Silpo MCP server.
+
+Features:
+- autofilling based on the user's shopping history and a manual prompt
+- adding the items to the actual shopping cart
+- besides, just a simple and keyboard-friendly shopping list
+
+Screenshot:
+
+![Screenshot](./docs/demo-screenshot.png)
+
+The resulting shopping cart:
+
+![Result](./docs/demo-shopping-cart-screenshot.png)
 
 ## Build & run
 
 1. Create a `config/application.properties` file and enter API keys that are
-    missing from [src/main/resources/application.properties](./src/main/resources/application.properties)
+    missing from [src/main/resources/application.properties](./src/main/resources/application.properties).
+
+    As of 2026, a Gemini API key can be obtained in [Google AI Studio](https://aistudio.google.com)
+    either for free or under a paid subscription.
 2. Build the frontend (requires Deno):
     ```sh
     cd src/frontend

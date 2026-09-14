@@ -47,7 +47,7 @@ public class AiController {
             Task: Predict items the user will likely buy based on their shopping history, prompt, and purchase frequency (regular or rare).
 
             Instructions:
-            - Use silpo_get_my_offline_orders for offline shopping history.
+            - Use silpo_get_my_offline_orders for live in-store shopping history.
             - Use silpo_get_my_online_orders for online shopping history.
             - Output Ukrainian language only (neutral tone), regardless of the input language.
             - Do not check the shopping cart.
@@ -71,7 +71,7 @@ public class AiController {
             напій газований Coca-Cola без цукру 1.5л
 
             Fallback:
-            If either online or offline shopping history is empty, use the other one.
+            If online shopping history is empty, use silpo_get_my_offline_orders.
             If no relevant items can be generated, output why on a single line.
             """;
 
