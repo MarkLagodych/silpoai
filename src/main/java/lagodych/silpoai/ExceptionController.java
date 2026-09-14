@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ExceptionController {
-    final String appName;
+    private final String appName;
 
     public ExceptionController(@Value("${spring.application.name}") String appName) {
         this.appName = appName;

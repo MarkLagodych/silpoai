@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ai")
 public class AiController {
 
-    final ChatClient chatClient;
+    private final ChatClient chatClient;
 
-    final List<McpSyncClient> mcpClients;
-    final SyncMcpToolCallbackProvider mcpToolCallbacks;
+    private final List<McpSyncClient> mcpClients;
+    private final SyncMcpToolCallbackProvider mcpToolCallbacks;
 
-    final String systemPrompt =
+    private final String systemPrompt =
             """
             You are an AI agent that simply executes MCP tools.
             Be as concise and efficient as possible. Do not provide any explanations or additional
@@ -34,7 +34,7 @@ public class AiController {
             Answer in Ukrainian with inline HTML. Do not use Markdown formatting.
             """;
 
-    static final String autofillSystemPrompt =
+    private static final String autofillSystemPrompt =
             """
             You are an AI agent for a smart shopping list.
             Your task is to autocomplete a shopping list based on user's shopping history and preferences.
@@ -64,7 +64,7 @@ public class AiController {
             If you cannot output anything relevant, output "хліб" on a single line.
             """;
 
-    static final String autofillUserPromptTemplate =
+    private static final String autofillUserPromptTemplate =
             """
             User prompt (can be empty):
             %s
@@ -73,18 +73,18 @@ public class AiController {
             %s
             """;
 
-    static String autofillUserPrompt(String preferences, String currentItems) {
+    private static String autofillUserPrompt(String preferences, String currentItems) {
         return String.format(autofillUserPromptTemplate, preferences, currentItems);
     }
 
-    static final Set<String> AUTOFILL_TOOLS =
+    private static final Set<String> AUTOFILL_TOOLS =
             Set.of(
                     "silpo_get_my_online_orders",
                     "silpo_get_my_offline_orders",
                     "silpo_get_my_food_restrictions",
                     "silpo_get_my_family");
 
-    static final Set<String> SHOP_TOOLS =
+    private static final Set<String> SHOP_TOOLS =
             Set.of(
                     "silpo_find_address",
                     "silpo_get_available_delivery_types",
@@ -108,7 +108,7 @@ public class AiController {
                     "silpo_get_my_delivery_addresses",
                     "silpo_get_my_food_restrictions");
 
-    AiController(ChatClient.Builder chatClientBuilder, List<McpSyncClient> clients) {
+    private AiController(ChatClient.Builder chatClientBuilder, List<McpSyncClient> clients) {
         this.chatClient = chatClientBuilder.build();
         this.mcpClients = clients;
         this.mcpToolCallbacks = SyncMcpToolCallbackProvider.builder().mcpClients(clients).build();
@@ -121,11 +121,11 @@ public class AiController {
     }
 
     @FunctionalInterface
-    interface AiEndpoint {
+    private interface AiEndpoint {
         ResponseEntity<Object> run() throws RuntimeException;
     }
 
-    ResponseEntity<Object> wrapAiEndpoint(AiEndpoint endpoint) throws RuntimeException {
+    private ResponseEntity<Object> wrapAiEndpoint(AiEndpoint endpoint) throws RuntimeException {
         try {
             return endpoint.run();
         } catch (Exception e) {
