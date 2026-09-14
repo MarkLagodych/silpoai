@@ -1,6 +1,6 @@
 # Smart shopping list
 
-> This is my submission for Silpo AI Factory hackaton held by Fozzy Group in September 2026.
+> This is my submission for [Silpo](https://silpo.ua/) AI Factory hackaton held by [Fozzy Group](https://en.wikipedia.org/wiki/Fozzy_Group) in September 2026.
 
 A shopping list, integrated with an LLM and official Silpo MCP server.
 
