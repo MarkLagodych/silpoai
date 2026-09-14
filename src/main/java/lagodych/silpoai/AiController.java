@@ -26,12 +26,19 @@ public class AiController {
     private final List<McpSyncClient> mcpClients;
     private final SyncMcpToolCallbackProvider mcpToolCallbacks;
 
-    private final String systemPrompt =
+    private final String shopPrompt =
             """
-            You are an AI agent that simply executes MCP tools.
-            Be as concise and efficient as possible. Do not provide any explanations or additional
-            information. Do not ask questions. Always output a short list of things you've done.
-            Answer in Ukrainian with inline HTML. Do not use Markdown formatting.
+            You are an AI agent for a smart shopping list.
+            Add all items from the user's shopping list to a shopping cart in the Silpo online store.
+            Do not remove any items from the shopping cart.
+            Use MCP tools as efficiently as possible.
+
+            Output a short list of things that you have done.
+
+            Do not provide any explanations or additional information.
+            Do not ask questions.
+            Answer in Ukrainian.
+            Use plain text, do not use Markdown formatting.
             """;
 
     private static final String autofillSystemPrompt =
@@ -45,8 +52,17 @@ public class AiController {
             - use Ukrainian language;
             - use plain text, no Markdown formatting.
 
-            Do not specify brand names, prices, or quantities, use generic product names unless necessary to distinguish a particular type of a product.
-            Examples: "молоко", "молоко 2.5%", "молоко безлактозне", "молоко кокосове".
+            Do not specify prices or quantities.
+            Use generic product names for most common products if they remain searchable.
+            The resulting list SHOULD be searchable in any supermarket of the same supermarket chain.
+            Good:
+                хліб білий
+                картопля
+                Coca-Cola без цукру
+            Bad:
+                хліб Український 500г
+                картопля Гала молода 2кг
+                напій газований
 
             Consider:
             - the user's prompt;
@@ -95,11 +111,6 @@ public class AiController {
                     "silpo_get_product_details",
                     "silpo_get_similar_products",
                     "silpo_get_replacements",
-                    "silpo_get_my_favorites",
-                    "silpo_get_categories",
-                    "silpo_get_category",
-                    "silpo_get_categories_tree",
-                    "silpo_get_product_sets",
                     "silpo_get_my_shopping_cart",
                     "silpo_create_shopping_cart",
                     "silpo_get_shopping_cart_by_id",
@@ -107,6 +118,14 @@ public class AiController {
                     "silpo_update_shopping_cart",
                     "silpo_get_my_delivery_addresses",
                     "silpo_get_my_food_restrictions");
+
+    /*
+    "silpo_get_my_favorites",
+    "silpo_get_categories",
+    "silpo_get_category",
+    "silpo_get_categories_tree",
+    "silpo_get_product_sets",
+    */
 
     private AiController(ChatClient.Builder chatClientBuilder, List<McpSyncClient> clients) {
         this.chatClient = chatClientBuilder.build();
@@ -153,6 +172,22 @@ public class AiController {
                                     .prompt(userPrompt)
                                     .system(autofillSystemPrompt)
                                     .tools((Object[]) filterTools(AUTOFILL_TOOLS))
+                                    .call()
+                                    .content();
+
+                    return ResponseEntity.ok().body(response);
+                });
+    }
+
+    @GetMapping("/shop")
+    ResponseEntity<Object> shop(@RequestParam(defaultValue = "") String items) {
+        return wrapAiEndpoint(
+                () -> {
+                    String response =
+                            chatClient
+                                    .prompt(items)
+                                    .system(shopPrompt)
+                                    .tools((Object[]) filterTools(SHOP_TOOLS))
                                     .call()
                                     .content();
 

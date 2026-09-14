@@ -1,22 +1,22 @@
-import { Accessor, createResource, createSignal, For, Show } from "solid-js";
-
-const aiAutofillUrl = "/ai/autofill";
-const aiAuthUrl = "/ai/auth";
-
 export class BackendAuthorizationError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
 
-export async function callAi(url: URL): Promise<string> {
+export async function callAi(action: string, args: Record<string, unknown>): Promise<string> {
+    const url = new URL("/ai/" + action, globalThis.location.href);
+    Object.entries(args).forEach(([key, value]) => {
+        url.searchParams.set(key, String(value));
+    });
+
     const res = await fetch(url.toString());
 
     console.log(res);
     if (!res.ok) {
         if (res.status === 401 /* Unauthorized */) {
-            globalThis.location.href = aiAuthUrl;
-            throw new BackendAuthorizationError("Unauthorized. Redirecting to " + aiAuthUrl);
+            globalThis.location.href = "/ai/auth";
+            throw new BackendAuthorizationError("Unauthorized. Redirecting to auth page...");
         } else {
             if (res.body === null) {
                 throw new Error("Unknown error");
@@ -33,11 +33,16 @@ export async function autofillShoppingList(
     preferences: string,
     currentItems: string[],
 ): Promise<string[]> {
-    const url = new URL(aiAutofillUrl, globalThis.location.href);
-    url.searchParams.set("preferences", preferences);
-    url.searchParams.set("currentItems", currentItems.join("\n"));
-
-    const response = await callAi(url);
+    const response = await callAi("autofill", {
+        preferences,
+        items: currentItems.join("\n"),
+    });
 
     return response.split("\n");
+}
+
+export async function addToCart(items: string[]): Promise<string> {
+    return await callAi("shop", {
+        items: items.join("\n"),
+    });
 }

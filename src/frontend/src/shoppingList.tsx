@@ -8,8 +8,14 @@ export interface ShoppingItem {
 const shoppingItemPlaceholders = [
     "Хліб",
     "Молоко",
-    "Все для борщу",
-    "Щось до чаю",
+    "Яйця",
+    "Картопля",
+    "Морква",
+    "Цибуля",
+    "Буряк",
+    "Помідори",
+    "Огірок",
+    "Капуста",
 ];
 
 const getRandomShoppingItemPlaceholder = () => {
@@ -18,7 +24,6 @@ const getRandomShoppingItemPlaceholder = () => {
 
 export function ShoppingList(
     props: {
-        search: (itemName: string) => void;
         itemStore: StoreReturn<ShoppingItem[]>;
     },
 ) {
@@ -114,10 +119,7 @@ export function ShoppingList(
                                 type="button"
                                 onClick={() => deleteItem(index())}
                             >
-                                🗑️
-                            </button>
-                            <button type="button" onClick={() => props.search(item.name)}>
-                                ✨ Знайти
+                                ❌
                             </button>
                         </Show>
                     </li>

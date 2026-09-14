@@ -1,30 +1,54 @@
-import { createSignal, For, Show } from "solid-js";
-import "./app.css";
-import { ShoppingItem, ShoppingList } from "./shoppingList.tsx";
+import { createResource, createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
-import { autofillShoppingList } from "./ai.tsx";
+
+import { ShoppingItem, ShoppingList } from "./shoppingList.tsx";
+import { addToCart, autofillShoppingList } from "./ai.tsx";
+
+import "./app.css";
 
 export function App() {
     const [preferences, setPreferences] = createSignal("");
 
     const [items, setItems] = createStore<ShoppingItem[]>([]);
 
-    const autofill = async () => {
+    const [statusMessage, setStatusMessage] = createSignal<string | null>(null);
+
+    const onAutofill = async () => {
         try {
+            setStatusMessage("Доповнюю список покупок...");
+
             const newItems = await autofillShoppingList(
                 preferences(),
                 items.map((item) => item.name),
             );
             setItems((items) => [...items, ...newItems.map((name) => ({ name }))]);
+
+            setStatusMessage("Готово!");
         } catch (error) {
             console.error("Error autofilling shopping list:", error);
+
+            setStatusMessage("Помилка при доповненні списку покупок. Спробуйте ще раз.");
+        }
+    };
+
+    const onAddToCart = async () => {
+        try {
+            setStatusMessage("Додаю до кошика...");
+
+            await addToCart(items.map((item) => item.name));
+
+            setStatusMessage("Готово!");
+        } catch (error) {
+            console.error("Error adding items to cart:", error);
+
+            setStatusMessage("Помилка при додаванні до кошика. Спробуйте ще раз.");
         }
     };
 
     return (
         <>
             <h1>Smart список покупок</h1>
-            <button type="button" onClick={autofill}>
+            <button type="button" onClick={onAutofill}>
                 ✨ Наповнити автоматично
             </button>
             &nbsp;Побажання:
@@ -35,15 +59,21 @@ export function App() {
                 onInput={(e) => setPreferences(e.currentTarget.value)}
             />
 
-            <ShoppingList search={() => {}} itemStore={[items, setItems]} />
+            <ShoppingList itemStore={[items, setItems]} />
 
-            <button type="button">
-                ✨ Додати вибране до кошика
+            <button type="button" onClick={onAddToCart}>
+                ✨ Додати до кошика
             </button>
             &nbsp;
             <a href="https://silpo.ua/" target="_blank" rel="noopener noreferrer">
-                Перевірити кошик ↗
+                Відкрити кошик ↗
             </a>
+
+            <div>
+                <Show when={statusMessage() !== null}>
+                    <p>{statusMessage()}</p>
+                </Show>
+            </div>
         </>
     );
 }
