@@ -2,12 +2,19 @@
 
 > This is my submission for [Silpo](https://silpo.ua/) AI Factory hackaton held by [Fozzy Group](https://en.wikipedia.org/wiki/Fozzy_Group) in September 2026.
 
-A shopping list, integrated with an LLM and official Silpo MCP server.
+A shopping list, integrated with an LLM✨ and the official Silpo MCP server.
 
 Features:
-- autofilling based on the user's shopping history and a manual prompt
+- ✨ autofilling based on the user's shopping history and a manual prompt
 - adding the items to the actual shopping cart
 - besides, just a simple and keyboard-friendly shopping list
+
+Built with:
+- 💪 Spring Boot
+- 💪 Spring AI, Spring MCP Client
+- 💪 Spring Boot MCP Security (handles Silpo OAuth authentication)
+- 💪 Gemini 3.5 Flash Lite (the LLM)
+- 💪 Solid.js, TypeScript, Deno, Vite (frontend)
 
 Screenshot:
 
@@ -51,7 +58,7 @@ The resulting shopping cart:
     ./gradlew bootRun
     ```
 
-#### Autoformat code
+#### Autoformat the code
 
 ```sh
 ./gradlew spotlessApply
