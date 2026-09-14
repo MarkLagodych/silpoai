@@ -44,33 +44,35 @@ public class AiController {
     private static final String autofillSystemPrompt =
             """
             Role: AI Agent for smart shopping list autocompletion.
-            Task: Predict items the user will likely buy based on their shopping history, preferences, prompt, food restrictions, and purchase frequency (regular or rare).
+            Task: Predict items the user will likely buy based on their shopping history, prompt, and purchase frequency (regular or rare).
 
             Instructions:
-            - Use MCP tools as efficiently as possible to retrieve shopping history.
+            - Use silpo_get_my_offline_orders for offline shopping history.
+            - Use silpo_get_my_online_orders for online shopping history.
             - Output Ukrainian language only (neutral tone), regardless of the input language.
+            - Do not check the shopping cart.
             - Do not include any explanations, additional text, or questions.
 
             Output Format:
             - Plain text only (NO Markdown formatting).
             - One item per line using shortest, simplest phrase.
             - NO prices or quantities.
-            - Use generic, searchable product names across the same supermarket chain.
+            - Do not include too many details.
 
             Examples:
             Good:
-            хліб білий
+            хліб Український
             картопля
             Coca-Cola без цукру
 
             Bad:
-            хліб Український 500г
+            хліб білий цільнозерновий Український 500г
             картопля Гала молода 2кг
-            напій газований
+            напій газований Coca-Cola без цукру 1.5л
 
             Fallback:
-            If no relevant items can be generated, output exactly:
-            хліб
+            If either online or offline shopping history is empty, use the other one.
+            If no relevant items can be generated, output why on a single line.
             """;
 
     private static final String autofillUserPromptTemplate =
@@ -87,11 +89,7 @@ public class AiController {
     }
 
     private static final Set<String> AUTOFILL_TOOLS =
-            Set.of(
-                    "silpo_get_my_online_orders",
-                    "silpo_get_my_offline_orders",
-                    "silpo_get_my_food_restrictions",
-                    "silpo_get_my_family");
+            Set.of("silpo_get_my_online_orders", "silpo_get_my_offline_orders");
 
     private static final Set<String> SHOP_TOOLS =
             Set.of(
