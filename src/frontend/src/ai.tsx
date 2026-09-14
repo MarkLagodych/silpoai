@@ -1,6 +1,6 @@
 import { Accessor, createResource, createSignal, For, Show } from "solid-js";
 
-const aiAskUrl = "/ai/ask";
+const aiAutofillUrl = "/ai/autofill";
 const aiAuthUrl = "/ai/auth";
 
 export class BackendAuthorizationError extends Error {
@@ -9,12 +9,10 @@ export class BackendAuthorizationError extends Error {
     }
 }
 
-export async function askAi(prompt: string): Promise<string> {
-    const url = new URL(aiAskUrl, globalThis.location.href);
-    url.searchParams.set("prompt", prompt);
-
+export async function callAi(url: URL): Promise<string> {
     const res = await fetch(url.toString());
 
+    console.log(res);
     if (!res.ok) {
         if (res.status === 401 /* Unauthorized */) {
             globalThis.location.href = aiAuthUrl;
@@ -31,15 +29,15 @@ export async function askAi(prompt: string): Promise<string> {
     return res.text();
 }
 
-export function AiResponse(props: { prompt: Accessor<string> }) {
-    const [response] = createResource(props.prompt, askAi);
+export async function autofillShoppingList(
+    preferences: string,
+    currentItems: string[],
+): Promise<string[]> {
+    const url = new URL(aiAutofillUrl, globalThis.location.href);
+    url.searchParams.set("preferences", preferences);
+    url.searchParams.set("currentItems", currentItems.join("\n"));
 
-    return (
-        <div>
-            AI Response:
-            <Show when={!response.loading} fallback={<p>Loading...</p>}>
-                <div innerHTML={response()}></div>
-            </Show>
-        </div>
-    );
+    const response = await callAi(url);
+
+    return response.split("\n");
 }

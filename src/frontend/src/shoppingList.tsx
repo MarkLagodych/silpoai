@@ -2,7 +2,6 @@ import { For, Show } from "solid-js";
 import { StoreReturn } from "solid-js/store";
 
 export interface ShoppingItem {
-    id: number;
     name: string;
 }
 
@@ -23,13 +22,10 @@ export function ShoppingList(
         itemStore: StoreReturn<ShoppingItem[]>;
     },
 ) {
-    let _nextId = 1;
-    const nextId = () => _nextId++;
-
     const [items, setItems] = props.itemStore;
 
     const setItemName = (index: number, oldItem: ShoppingItem, name: string) => {
-        setItems(index, { ...oldItem, name: name });
+        setItems(index, { ...oldItem, name });
     };
 
     const deleteItem = (index: number) => {
@@ -39,7 +35,7 @@ export function ShoppingList(
     const insertItem = (index: number, value: string) => {
         setItems((
             items,
-        ) => [...items.slice(0, index), { id: nextId(), name: value }, ...items.slice(index)]);
+        ) => [...items.slice(0, index), { name: value }, ...items.slice(index)]);
 
         focusItem(index);
     };

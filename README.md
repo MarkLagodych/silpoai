@@ -1,4 +1,6 @@
-# Silpo AI hackaton submission
+# Smart shopping list
+
+This is my submission for Silpo AI Factory hackaton held by Fozzy Group in September 2026.
 
 ## Build & run
 
@@ -31,7 +33,7 @@
     ./gradlew bootRun
     ```
 
-#### Format
+#### Autoformat code
 
 ```sh
 ./gradlew spotlessApply
