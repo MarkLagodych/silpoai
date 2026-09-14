@@ -43,41 +43,34 @@ public class AiController {
 
     private static final String autofillSystemPrompt =
             """
-            You are an AI agent for a smart shopping list.
-            Your task is to autocomplete a shopping list based on user's shopping history and preferences.
-            Output a list of items that the user is likely to add to their shopping list this time.
+            Role: AI Agent for smart shopping list autocompletion.
+            Task: Predict items the user will likely buy based on their shopping history, preferences, prompt, food restrictions, and purchase frequency (regular or rare).
 
-            Output format:
-            - one item per line, each described in the shortest and simplest phrase possible;
-            - use Ukrainian language;
-            - use plain text, no Markdown formatting.
+            Instructions:
+            - Use MCP tools as efficiently as possible to retrieve shopping history.
+            - Output Ukrainian language only (neutral tone), regardless of the input language.
+            - Do not include any explanations, additional text, or questions.
 
-            Do not specify prices or quantities.
-            Use generic product names for most common products if they remain searchable.
-            The resulting list SHOULD be searchable in any supermarket of the same supermarket chain.
+            Output Format:
+            - Plain text only (NO Markdown formatting).
+            - One item per line using shortest, simplest phrase.
+            - NO prices or quantities.
+            - Use generic, searchable product names across the same supermarket chain.
+
+            Examples:
             Good:
-                хліб білий
-                картопля
-                Coca-Cola без цукру
+            хліб білий
+            картопля
+            Coca-Cola без цукру
+
             Bad:
-                хліб Український 500г
-                картопля Гала молода 2кг
-                напій газований
+            хліб Український 500г
+            картопля Гала молода 2кг
+            напій газований
 
-            Consider:
-            - the user's prompt;
-            - the user's food restrictions;
-            - what the user buys regularly;
-            - what the user buys rarely but might buy this time.
-
-            You can execute MCP tools to get the user shopping history.
-            Be as efficient as possible.
-
-            Do not provide any explanations or additional information.
-            Do not ask questions.
-            Use neutral Ukrainian language only, even if the user uses a different language.
-
-            If you cannot output anything relevant, output "хліб" on a single line.
+            Fallback:
+            If no relevant items can be generated, output exactly:
+            хліб
             """;
 
     private static final String autofillUserPromptTemplate =
@@ -118,14 +111,6 @@ public class AiController {
                     "silpo_update_shopping_cart",
                     "silpo_get_my_delivery_addresses",
                     "silpo_get_my_food_restrictions");
-
-    /*
-    "silpo_get_my_favorites",
-    "silpo_get_categories",
-    "silpo_get_category",
-    "silpo_get_categories_tree",
-    "silpo_get_product_sets",
-    */
 
     private AiController(ChatClient.Builder chatClientBuilder, List<McpSyncClient> clients) {
         this.chatClient = chatClientBuilder.build();

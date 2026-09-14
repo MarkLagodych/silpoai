@@ -12,7 +12,6 @@ export async function callAi(action: string, args: Record<string, unknown>): Pro
 
     const res = await fetch(url.toString());
 
-    console.log(res);
     if (!res.ok) {
         if (res.status === 401 /* Unauthorized */) {
             globalThis.location.href = "/ai/auth";

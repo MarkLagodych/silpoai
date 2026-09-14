@@ -1,4 +1,4 @@
-import { createResource, createSignal, Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 
 import { ShoppingItem, ShoppingList } from "./shoppingList.tsx";
